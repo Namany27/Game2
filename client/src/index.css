@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 3.9%; /* #121212 */
+  --foreground: 0 0% 98%; /* #FAFAFA */
+  --muted: 240 3.7% 15.9%; /* #1E1E1E */
+  --muted-foreground: 240 5% 64.9%; /* #A0A0A0 */
+  --popover: 240 10% 3.9%; /* #121212 */
+  --popover-foreground: 0 0% 98%; /* #FAFAFA */
+  --card: 240 10% 3.9%; /* #121212 */
+  --card-foreground: 0 0% 98%; /* #FAFAFA */
+  --border: 240 3.7% 15.9%; /* #1E1E1E */
+  --input: 240 3.7% 15.9%; /* #1E1E1E */
+  --primary: 339 94% 55%; /* #FF4081 - Pink accent */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --secondary: 157 100% 45%; /* #00E676 - Green accent */
+  --secondary-foreground: 0 0% 100%; /* #FFFFFF */
+  --accent: 199 100% 50%; /* #00B0FF - Blue accent */
+  --accent-foreground: 0 0% 100%; /* #FFFFFF */
+  --destructive: 0 100% 54%; /* #FF1744 */
+  --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+  --ring: 339 94% 55%; /* #FF4081 */
+  --radius: 0.5rem;
+  
+  /* Chart colors */
+  --chart-1: 339 94% 55%; /* #FF4081 - Pink accent */
+  --chart-2: 157 100% 45%; /* #00E676 - Green accent */
+  --chart-3: 199 100% 50%; /* #00B0FF - Blue accent */
+  --chart-4: 49 100% 54%; /* #FFEA00 - Yellow */
+  --chart-5: 291 100% 55%; /* #D500F9 - Purple */
+  
+  /* Sidebar specific colors */
+  --sidebar-background: 240 10% 10%; /* #171717 - Slightly lighter */
+  --sidebar-foreground: 0 0% 98%; /* #FAFAFA */
+  --sidebar-primary: 339 94% 55%; /* #FF4081 */
+  --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --sidebar-accent: 240 3.7% 15.9%; /* #222222 */
+  --sidebar-accent-foreground: 0 0% 98%; /* #FAFAFA */
+  --sidebar-border: 240 5% 25%; /* #3E3E3E - Slightly lighter border */
+  --sidebar-ring: 339 94% 55%; /* #FF4081 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .game-card {
+    @apply transition-all duration-300;
+  }
+  
+  .game-card:hover {
+    @apply transform -translate-y-1 shadow-lg;
+  }
+  
+  .nav-item {
+    @apply transition-all duration-200;
+  }
+  
+  .nav-item:hover {
+    @apply bg-opacity-10 bg-white;
+  }
+  
+  .nav-item.active {
+    @apply border-l-[3px] border-primary bg-primary bg-opacity-10;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Carousel styling */
+.carousel {
+  scroll-behavior: smooth;
+}
+.carousel::-webkit-scrollbar {
+  display: none;
+}
