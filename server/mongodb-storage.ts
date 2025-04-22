@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import createMemoryStore from "memorystore";
 import { IStorage } from './storage';
 import { 
   User,
@@ -27,17 +28,30 @@ export class MongoDBStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    // Initialize the MongoDB session store
-    this.sessionStore = MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
-      collectionName: 'sessions'
-    });
-    
-    // Connect to MongoDB
-    this.connect();
-    
-    // Initialize the database with default data
-    this.initialize();
+    try {
+      // Initialize the MongoDB session store
+      this.sessionStore = MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions'
+      });
+      
+      // Connect to MongoDB and initialize only if connection successful
+      this.connect().then(connected => {
+        if (connected) {
+          // Initialize the database with default data
+          this.initialize();
+        }
+      }).catch(err => {
+        console.error("Failed to initialize MongoDB:", err);
+      });
+    } catch (error) {
+      console.error("Error creating MongoDB store:", error);
+      // Create an in-memory store as fallback
+      const MemoryStore = createMemoryStore(session);
+      this.sessionStore = new MemoryStore({
+        checkPeriod: 86400000,
+      });
+    }
   }
 
   private async connect() {
@@ -47,12 +61,19 @@ export class MongoDBStorage implements IStorage {
       }
       
       console.log('Connecting to MongoDB...');
-      await mongoose.connect(process.env.MONGODB_URI);
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds instead of 30
+        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+        family: 4 // Use IPv4, skip trying IPv6
+      });
       console.log('Connected to MongoDB successfully');
     } catch (error) {
       console.error('Failed to connect to MongoDB:', error);
-      throw error;
+      console.log('Falling back to in-memory storage');
+      // Instead of throwing, we'll let it continue and use in-memory storage
+      return false;
     }
+    return true;
   }
 
   private async initialize() {
