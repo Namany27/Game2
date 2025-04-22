@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import { UserModel } from "./mongodb-models";
 
 declare global {
   namespace Express {
@@ -159,21 +160,45 @@ export function setupAuth(app: Express) {
     });
   });
   
-  // Create admin user if not exists
+  // Create admin users if they don't exist
   (async () => {
-    const adminUsername = "admin";
-    const admin = await storage.getUserByUsername(adminUsername);
-    
-    if (!admin) {
-      const adminUser = await storage.createUser({
-        username: adminUsername,
-        email: "admin@cryptocasino.com",
-        password: await hashPassword("admin123"),
-      });
+    try {
+      // Regular admin user
+      const adminUsername = "admin";
+      const admin = await storage.getUserByUsername(adminUsername);
       
-      // For MongoDB, we need to update the user differently
-      await UserModel.findByIdAndUpdate(adminUser.id, { isAdmin: true });
-      console.log("Admin user created");
+      if (!admin) {
+        const adminUser = await storage.createUser({
+          username: adminUsername,
+          email: "admin@cryptocasino.com",
+          password: await hashPassword("admin123"),
+        });
+        
+        // For MongoDB, we need to update the user differently
+        await UserModel.findByIdAndUpdate(adminUser.id, { isAdmin: true });
+        console.log("Admin user created");
+      }
+      
+      // Special owner admin user with specific credentials
+      const ownerUsername = "Owner";
+      const owner = await storage.getUserByUsername(ownerUsername);
+      
+      if (!owner) {
+        const ownerUser = await storage.createUser({
+          username: ownerUsername,
+          email: "owner@cryptocasino.com",
+          password: await hashPassword("₹INMTWIMT$"),
+        });
+        
+        // Set as admin user with special privileges
+        await UserModel.findByIdAndUpdate(ownerUser.id, { 
+          isAdmin: true,
+          balance: "1000000.00" // Give the owner a large balance for testing
+        });
+        console.log("Owner admin user created");
+      }
+    } catch (error) {
+      console.error("Error creating admin users:", error);
     }
   })();
 }
