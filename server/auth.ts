@@ -171,10 +171,8 @@ export function setupAuth(app: Express) {
         password: await hashPassword("admin123"),
       });
       
-      // Update user to be admin
-      const updatedAdmin = { ...adminUser, isAdmin: true };
-      storage.users.set(adminUser.id, updatedAdmin);
-      
+      // For MongoDB, we need to update the user differently
+      await UserModel.findByIdAndUpdate(adminUser.id, { isAdmin: true });
       console.log("Admin user created");
     }
   })();
