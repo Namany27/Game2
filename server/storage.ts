@@ -12,12 +12,14 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserBalance(userId: number, amount: number): Promise<User>;
+  getAllUsers(): Promise<User[]>; // Added for Owner admin panel
   
   // Transaction methods
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getTransaction(id: number): Promise<Transaction | undefined>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
   updateTransactionStatus(id: number, status: string): Promise<Transaction>;
+  getAllTransactions(): Promise<Transaction[]>; // Added for Owner admin panel
   
   // Game methods
   getGames(): Promise<Game[]>;
@@ -30,6 +32,7 @@ export interface IStorage {
   createGameSession(session: InsertGameSession): Promise<GameSession>;
   getUserGameSessions(userId: number): Promise<GameSession[]>;
   getRecentWins(limit: number): Promise<GameSession[]>;
+  getAllGameSessions(): Promise<GameSession[]>; // Added for Owner admin panel
   
   // Admin methods
   getAdminStats(): Promise<{
@@ -247,6 +250,23 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
   }
 
+  // Get all users - for Owner admin panel
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+  
+  // Get all transactions - for Owner admin panel
+  async getAllTransactions(): Promise<Transaction[]> {
+    return Array.from(this.transactions.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
+  // Get all game sessions - for Owner admin panel
+  async getAllGameSessions(): Promise<GameSession[]> {
+    return Array.from(this.gameSessions.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
   // Admin methods
   async getAdminStats(): Promise<{
     totalUsers: number;

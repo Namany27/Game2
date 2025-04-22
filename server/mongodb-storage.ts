@@ -463,6 +463,70 @@ export class MongoDBStorage implements IStorage {
       createdAt: session.createdAt
     }));
   }
+  
+  // Get all users - Owner admin panel
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const users = await UserModel.find({}).lean();
+      return users.map(user => ({
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        password: user.password,
+        balance: user.balance,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt
+      }));
+    } catch (error) {
+      console.error("Error getting all users:", error);
+      return [];
+    }
+  }
+  
+  // Get all transactions - Owner admin panel
+  async getAllTransactions(): Promise<Transaction[]> {
+    try {
+      const transactions = await TransactionModel.find({})
+        .sort({ createdAt: -1 })
+        .lean();
+      
+      return transactions.map(tx => ({
+        id: tx._id,
+        userId: tx.userId,
+        type: tx.type,
+        amount: tx.amount,
+        status: tx.status,
+        txHash: tx.txHash,
+        gameId: tx.gameId,
+        createdAt: tx.createdAt
+      }));
+    } catch (error) {
+      console.error("Error getting all transactions:", error);
+      return [];
+    }
+  }
+  
+  // Get all game sessions - Owner admin panel
+  async getAllGameSessions(): Promise<GameSession[]> {
+    try {
+      const sessions = await GameSessionModel.find({})
+        .sort({ createdAt: -1 })
+        .lean();
+      
+      return sessions.map(session => ({
+        id: session._id,
+        userId: session.userId,
+        gameId: session.gameId,
+        bet: session.bet,
+        result: session.result,
+        win: session.win,
+        createdAt: session.createdAt
+      }));
+    } catch (error) {
+      console.error("Error getting all game sessions:", error);
+      return [];
+    }
+  }
 
   // Admin methods
   async getAdminStats(): Promise<{
