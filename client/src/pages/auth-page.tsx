@@ -598,7 +598,7 @@ export default function AuthPage() {
       </footer>
       
       {/* CSS for animations */}
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         @keyframes spin-slow {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
@@ -616,7 +616,7 @@ export default function AuthPage() {
           background-size: 200% 200%;
           animation: gradient 4s ease infinite;
         }
-      `}</style>
+      `}} />
     </div>
   );
 }

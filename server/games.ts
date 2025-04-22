@@ -69,6 +69,13 @@ export function setupGameRoutes(app: Express) {
       const winAmount = bet * multiplier;
       const netWin = winAmount - bet; // Can be negative if player lost
       
+      // Update user balance - deduct bet first, then add winnings if any
+      await storage.updateUserBalance(req.user.id, -bet); // Deduct the bet amount
+      if (winAmount > 0) {
+        // If there are winnings, add them back
+        await storage.updateUserBalance(req.user.id, winAmount);
+      }
+      
       // Record game session
       const gameSession = await storage.createGameSession({
         userId: req.user.id,
@@ -78,13 +85,16 @@ export function setupGameRoutes(app: Express) {
         win: netWin.toFixed(2)
       });
       
+      // Get updated user
+      const updatedUser = await storage.getUser(req.user.id);
+      
       // Return result
       res.json({
         reels,
         bet,
         win: netWin,
         multiplier,
-        balance: (await storage.getUser(req.user.id))?.balance
+        balance: updatedUser?.balance
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -177,6 +187,13 @@ export function setupGameRoutes(app: Express) {
       const winAmount = win ? bet * multiplier : 0;
       const netWin = winAmount - bet; // Negative if player lost
       
+      // Update user balance - deduct bet first, then add winnings if any
+      await storage.updateUserBalance(req.user.id, -bet); // Deduct the bet amount
+      if (winAmount > 0) {
+        // If there are winnings, add them back
+        await storage.updateUserBalance(req.user.id, winAmount);
+      }
+      
       // Record game session
       const gameSession = await storage.createGameSession({
         userId: req.user.id,
@@ -185,6 +202,9 @@ export function setupGameRoutes(app: Express) {
         result: { number: result, betType, betNumber },
         win: netWin.toFixed(2)
       });
+      
+      // Get updated user
+      const updatedUser = await storage.getUser(req.user.id);
       
       // Return result
       res.json({
@@ -195,7 +215,7 @@ export function setupGameRoutes(app: Express) {
         betNumber,
         win: netWin,
         multiplier: win ? multiplier : 0,
-        balance: (await storage.getUser(req.user.id))?.balance
+        balance: updatedUser?.balance
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -298,18 +318,24 @@ export function setupGameRoutes(app: Express) {
       let gameStatus = "in_progress";
       let netWin = 0;
       
+      // Deduct the bet amount from user's balance immediately
+      await storage.updateUserBalance(req.user.id, -bet);
+      
       if (playerHasBlackjack || dealerHasBlackjack) {
         if (playerHasBlackjack && dealerHasBlackjack) {
           // Push - player gets bet back
           gameStatus = "push";
+          await storage.updateUserBalance(req.user.id, bet); // Return the bet
         } else if (playerHasBlackjack) {
           // Player wins 3:2
           gameStatus = "player_blackjack";
           netWin = bet * 1.5;
+          await storage.updateUserBalance(req.user.id, bet + netWin); // Return bet + winnings
         } else {
           // Dealer wins
           gameStatus = "dealer_blackjack";
           netWin = -bet;
+          // No need to update balance as we already deducted the bet
         }
         
         // Record game session for completed game
@@ -328,6 +354,9 @@ export function setupGameRoutes(app: Express) {
         });
       }
       
+      // Get updated user balance
+      const updatedUser = await storage.getUser(req.user.id);
+      
       // Return initial deal result
       res.json({
         gameId,
@@ -341,7 +370,7 @@ export function setupGameRoutes(app: Express) {
         canStand: gameStatus === "in_progress",
         canDouble: gameStatus === "in_progress" && playerHand.length === 2,
         deck: deck.map(() => ({ suit: "?", value: "?" })), // Hide remaining deck
-        balance: (await storage.getUser(req.user.id))?.balance
+        balance: updatedUser?.balance
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -497,6 +526,22 @@ export function setupGameRoutes(app: Express) {
           netWin = netWin * houseEdgeMultiplier;
         }
         
+        // Update user balance based on the outcome
+        if (action === "double") {
+          // Deduct the additional bet amount for doubling down
+          await storage.updateUserBalance(req.user.id, -bet/2);
+        }
+        
+        // Handle wins, losses, and pushes
+        if (netWin > 0) {
+          // Player won - add winnings plus original bet
+          await storage.updateUserBalance(req.user.id, bet + netWin);
+        } else if (netWin === 0) {
+          // Push - return original bet
+          await storage.updateUserBalance(req.user.id, bet);
+        }
+        // For losses, the bet was already deducted at the start or during double down
+        
         await storage.createGameSession({
           userId: req.user.id,
           gameId,
@@ -511,6 +556,9 @@ export function setupGameRoutes(app: Express) {
           win: netWin.toFixed(2)
         });
       }
+      
+      // Get updated user balance
+      const updatedUser = await storage.getUser(req.user.id);
       
       // Return result
       res.json({
@@ -527,7 +575,7 @@ export function setupGameRoutes(app: Express) {
         canStand: gameStatus === "in_progress",
         canDouble: gameStatus === "in_progress" && playerHand.length === 2,
         deck: deck.map(() => ({ suit: "?", value: "?" })), // Hide remaining deck
-        balance: (await storage.getUser(req.user.id))?.balance
+        balance: updatedUser?.balance
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
