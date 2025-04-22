@@ -28,26 +28,27 @@ import AdminTransactions from "@/pages/admin/transactions";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/games" component={GamesPage} />
-      <Route path="/wallet" component={WalletPage} />
-      <Route path="/profile" component={ProfilePage} />
-      
-      {/* Game routes */}
-      <Route path="/game/slots/:id" component={SlotsPage} />
-      <Route path="/game/roulette/:id" component={RoulettePage} />
-      <Route path="/game/blackjack/:id" component={BlackjackPage} />
-      
-      {/* Admin routes */}
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/games" component={AdminGamesConfig} />
-      <Route path="/admin/transactions" component={AdminTransactions} />
-      
-      {/* Auth page */}
+      {/* Auth page - the only publicly accessible route */}
       <Route path="/auth" component={AuthPage} />
       
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
+      {/* Protected routes - require authentication */}
+      <ProtectedRoute path="/" component={HomePage} />
+      <ProtectedRoute path="/games" component={GamesPage} />
+      <ProtectedRoute path="/wallet" component={WalletPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
+      
+      {/* Game routes - protected */}
+      <ProtectedRoute path="/game/slots/:id" component={SlotsPage} />
+      <ProtectedRoute path="/game/roulette/:id" component={RoulettePage} />
+      <ProtectedRoute path="/game/blackjack/:id" component={BlackjackPage} />
+      
+      {/* Admin routes - protected and require admin role */}
+      <ProtectedRoute path="/admin" component={AdminDashboard} adminOnly={true} />
+      <ProtectedRoute path="/admin/games" component={AdminGamesConfig} adminOnly={true} />
+      <ProtectedRoute path="/admin/transactions" component={AdminTransactions} adminOnly={true} />
+      
+      {/* Fallback to 404 - also protected to prevent access to invalid routes */}
+      <ProtectedRoute path="/:404*" component={NotFound} />
     </Switch>
   );
 }
