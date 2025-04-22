@@ -39,7 +39,7 @@ export interface IStorage {
     houseProfit: number;
   }>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -51,7 +51,7 @@ export class MemStorage implements IStorage {
   currentTransactionId: number;
   currentGameId: number;
   currentGameSessionId: number;
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -283,4 +283,19 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Import MongoDB storage implementation
+import { MongoDBStorage } from './mongodb-storage';
+
+// Select the storage implementation based on environment
+let storageImplementation: IStorage;
+
+// Check if MONGODB_URI is provided, use MongoDB storage
+if (process.env.MONGODB_URI) {
+  console.log('Using MongoDB storage');
+  storageImplementation = new MongoDBStorage();
+} else {
+  console.log('Using in-memory storage (MONGODB_URI not provided)');
+  storageImplementation = new MemStorage();
+}
+
+export const storage = storageImplementation;
