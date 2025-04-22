@@ -69,12 +69,8 @@ export function setupGameRoutes(app: Express) {
       const winAmount = bet * multiplier;
       const netWin = winAmount - bet; // Can be negative if player lost
       
-      // Update user balance - deduct bet first, then add winnings if any
-      await storage.updateUserBalance(req.user.id, -bet); // Deduct the bet amount
-      if (winAmount > 0) {
-        // If there are winnings, add them back
-        await storage.updateUserBalance(req.user.id, winAmount);
-      }
+      // Update user balance - simply adjust by net win/loss amount
+      await storage.updateUserBalance(req.user.id, netWin);
       
       // Record game session
       const gameSession = await storage.createGameSession({
@@ -187,12 +183,8 @@ export function setupGameRoutes(app: Express) {
       const winAmount = win ? bet * multiplier : 0;
       const netWin = winAmount - bet; // Negative if player lost
       
-      // Update user balance - deduct bet first, then add winnings if any
-      await storage.updateUserBalance(req.user.id, -bet); // Deduct the bet amount
-      if (winAmount > 0) {
-        // If there are winnings, add them back
-        await storage.updateUserBalance(req.user.id, winAmount);
-      }
+      // Update user balance - simply adjust by net win/loss amount
+      await storage.updateUserBalance(req.user.id, netWin);
       
       // Record game session
       const gameSession = await storage.createGameSession({
