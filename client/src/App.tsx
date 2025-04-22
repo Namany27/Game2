@@ -28,23 +28,23 @@ import AdminTransactions from "@/pages/admin/transactions";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
-      <ProtectedRoute path="/games" component={GamesPage} />
-      <ProtectedRoute path="/wallet" component={WalletPage} />
-      <ProtectedRoute path="/profile" component={ProfilePage} />
+      <Route path="/" component={HomePage} />
+      <Route path="/games" component={GamesPage} />
+      <Route path="/wallet" component={WalletPage} />
+      <Route path="/profile" component={ProfilePage} />
       
       {/* Game routes */}
-      <ProtectedRoute path="/game/slots/:id" component={SlotsPage} />
-      <ProtectedRoute path="/game/roulette/:id" component={RoulettePage} />
-      <ProtectedRoute path="/game/blackjack/:id" component={BlackjackPage} />
+      <Route path="/game/slots/:id" component={SlotsPage} />
+      <Route path="/game/roulette/:id" component={RoulettePage} />
+      <Route path="/game/blackjack/:id" component={BlackjackPage} />
       
       {/* Admin routes */}
-      <ProtectedRoute path="/admin" component={AdminDashboard} adminOnly={true} />
-      <ProtectedRoute path="/admin/games" component={AdminGamesConfig} adminOnly={true} />
-      <ProtectedRoute path="/admin/transactions" component={AdminTransactions} adminOnly={true} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/games" component={AdminGamesConfig} />
+      <Route path="/admin/transactions" component={AdminTransactions} />
       
       {/* Auth page */}
-      <AuthPage path="/auth" />
+      <Route path="/auth" component={AuthPage} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
