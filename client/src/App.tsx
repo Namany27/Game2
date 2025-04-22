@@ -25,6 +25,9 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import AdminGamesConfig from "@/pages/admin/games-config";
 import AdminTransactions from "@/pages/admin/transactions";
 
+// Owner-only pages
+import OwnerDashboard from "@/pages/owner/dashboard";
+
 function Router() {
   return (
     <Switch>
@@ -46,6 +49,9 @@ function Router() {
       <ProtectedRoute path="/admin" component={AdminDashboard} adminOnly={true} />
       <ProtectedRoute path="/admin/games" component={AdminGamesConfig} adminOnly={true} />
       <ProtectedRoute path="/admin/transactions" component={AdminTransactions} adminOnly={true} />
+      
+      {/* Owner Dashboard - only accessible by the Owner user */}
+      <ProtectedRoute path="/owner" component={OwnerDashboard} adminOnly={true} />
       
       {/* Fallback to 404 - also protected to prevent access to invalid routes */}
       <ProtectedRoute path="/:404*" component={NotFound} />
